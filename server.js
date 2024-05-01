@@ -4,6 +4,7 @@ const path = require('path');
 
 const app = express();
 
+app.use(express.json());
 
 // Middleware to serve static files
 app.use(express.static('public'));
@@ -51,6 +52,16 @@ app.post('/payment-sheet', async (req, res) => {
 
 
 app.post('/create-checkout-session', async (req, res) => {
+  const id = req.body.id; // Accessing price sent from client
+  if (!id) {
+      return res.status(400).send("Id order is required");
+  }
+
+  const price = req.body.price; // Accessing price sent from client
+  if (!price) {
+      return res.status(400).send("Price is required");
+  }
+
   const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -59,17 +70,18 @@ app.post('/create-checkout-session', async (req, res) => {
               product_data: {
                   name: 'T-shirt',
               },
-              unit_amount: 2000,
+              unit_amount: price,
           },
           quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${req.headers.origin}/success`,
-      cancel_url: `${req.headers.origin}/cancel`,
+      success_url: `${req.headers.origin}/success?id=${id}&price=${price}`,
+      cancel_url: `${req.headers.origin}/cancel?id=${id}&price=${price}`,
   });
 
   res.json({ sessionId: session.id });
 });
+
 
 
 
