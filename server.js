@@ -1,5 +1,6 @@
 const express = require('express');
 const stripe = require('stripe')('sk_test_51PBIYF08bUcYa2HA2w3H7kT5ylRz3BiyzA2lhazM6a20YibswW1OZDBvBDGCCKhFZeea1iGUZRbEx6KHIU9SUqsD00KkmGmYE6');
+const path = require('path');
 
 const app = express();
 
@@ -9,8 +10,18 @@ app.use(express.static('public'));
 
 // Alternatively, you can directly send the HTML file in response to the root path
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname, 'public', 'test.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
     res.setHeader("Permissions-Policy", "attribution-reporting=(self)");
+});
+
+app.get('/cancel', function(req, res) {
+  res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
+  res.setHeader("Permissions-Policy", "attribution-reporting=(self)");
+});
+
+app.get('/success', function(req, res) {
+  res.sendFile(path.join(__dirname, 'public', 'success.html'));
+  res.setHeader("Permissions-Policy", "attribution-reporting=(self)");
 });
 
 
@@ -53,8 +64,8 @@ app.post('/create-checkout-session', async (req, res) => {
           quantity: 1,
       }],
       mode: 'payment',
-      success_url: 'https://yourdomain.com/success',
-      cancel_url: 'https://yourdomain.com/cancel',
+      success_url: `${req.headers.origin}/success`,
+      cancel_url: `${req.headers.origin}/cancel`,
   });
 
   res.json({ sessionId: session.id });
