@@ -6,10 +6,8 @@ const app = express();
 
 app.use(express.json());
 
-// Middleware to serve static files
 app.use(express.static('public'));
 
-// Alternatively, you can directly send the HTML file in response to the root path
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
     res.setHeader("Permissions-Policy", "attribution-reporting=(self)");
@@ -27,7 +25,6 @@ app.get('/success', function(req, res) {
 
 
 app.post('/payment-sheet', async (req, res) => {
-  // Create a new Stripe customer
   const customer = await stripe.customers.create();
   const ephemeralKey = await stripe.ephemeralKeys.create(
     {customer: customer.id},
@@ -35,7 +32,7 @@ app.post('/payment-sheet', async (req, res) => {
   );
   const paymentIntent = await stripe.paymentIntents.create({
     amount: 1099,
-    currency: 'eur',
+    currency: 'vnd',
     customer: customer.id,
     automatic_payment_methods: {
       enabled: true,
@@ -52,12 +49,12 @@ app.post('/payment-sheet', async (req, res) => {
 
 
 app.post('/create-checkout-session', async (req, res) => {
-  const id = req.body.id; // Accessing price sent from client
+  const id = req.body.id; 
   if (!id) {
       return res.status(400).send("Id order is required");
   }
 
-  const price = req.body.price; // Accessing price sent from client
+  const price = req.body.price;
   if (!price) {
       return res.status(400).send("Price is required");
   }
@@ -66,9 +63,9 @@ app.post('/create-checkout-session', async (req, res) => {
       payment_method_types: ['card'],
       line_items: [{
           price_data: {
-              currency: 'usd',
+              currency: 'vnd',
               product_data: {
-                  name: 'T-shirt',
+                  name: 'Payment',
               },
               unit_amount: price,
           },
@@ -83,9 +80,6 @@ app.post('/create-checkout-session', async (req, res) => {
 });
 
 
-
-
-// Set the port for the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
